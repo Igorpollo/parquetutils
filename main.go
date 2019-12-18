@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/urfave/cli/v2"
@@ -13,7 +15,7 @@ import (
 )
 
 func main() {
-	var file, output string
+	var file, output, url string
 
 	app := &cli.App{
 		Flags: []cli.Flag{
@@ -23,6 +25,12 @@ func main() {
 				Aliases:     []string{"f"},
 				Usage:       "path of the parquet file",
 				Destination: &file,
+			},
+			&cli.StringFlag{
+				Name:        "url",
+				Aliases:     []string{"u"},
+				Usage:       "get parquet file from url",
+				Destination: &url,
 			},
 			&cli.StringFlag{
 				Name:        "output",
@@ -37,6 +45,10 @@ func main() {
 				Name:  "readcolumns",
 				Usage: "add a task to the list",
 				Action: func(c *cli.Context) error {
+					if url != "" {
+						saveFile(url)
+						file = "dowloaded.parquet"
+					}
 					readcolumns(file)
 					return nil
 				},
@@ -45,6 +57,10 @@ func main() {
 				Name:  "tojson",
 				Usage: "convert parquet file to json",
 				Action: func(c *cli.Context) error {
+					if url != "" {
+						saveFile(url)
+						file = "dowloaded.parquet"
+					}
 					toJSON(file, output)
 					fmt.Println("JSON file created successfully", c.Args().First())
 					return nil
@@ -87,6 +103,34 @@ func toJSON(path, output string) {
 		log.Println("Can't Write the file", err)
 		return
 	}
+}
+
+func saveFile(url string) {
+	fileURL := url
+	if err := DownloadFile("dowloaded.parquet", fileURL); err != nil {
+		panic(err)
+	}
+}
+
+func DownloadFile(filepath string, url string) error {
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	return err
 }
 
 func readcolumns(path string) {
