@@ -1,12 +1,15 @@
 # parquetutils
 
 ## RUN
-
-git clone
+```
+git clone https://github.com/Igorpollo/parquetutils
 
 cd parquetutils
 
 go install
+
+parquetutils help
+```
 
 To see all commands and flags
 
