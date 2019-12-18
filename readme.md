@@ -3,7 +3,9 @@
 ## RUN
 
 git clone
+
 cd parquetutils
+
 go install
 
 To see all commands and flags
