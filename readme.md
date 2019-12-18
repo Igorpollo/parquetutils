@@ -11,6 +11,9 @@ go install
 parquetutils help
 ```
 
+## HOW TO USE
+
+
 To see all commands and flags
 
 ```
